@@ -51,4 +51,18 @@ app.get('/rediness', (request, response) => {
     });
 })
 
+app.get('/diario', (request, response) => {
+    return response
+    .status(200)
+    .json({
+        message: "Meu aplicativo está funcionando, UFA!!!",
+        platform: os.platform(),
+        os: os.platform(),
+        freemem: os.freemem(),
+        homedir: os.homedir(),
+        date: new Date().getTime()
+
+    });
+})
+
 module.exports = app;
