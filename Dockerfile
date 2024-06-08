@@ -1,21 +1,26 @@
+# Dockerfile
+
 FROM node:18-slim
 
-ENV NODE_ENV development
+# Instalação do MySQL
+RUN apt-get update && \
+    apt-get install -y mysql-client && \
+    apt-get clean
 
-USER root
+# Copiar o script SQL para dentro do contêiner
+COPY script.sql /docker-entrypoint-initdb.d/
 
-RUN apt-get update && apt-get upgrade -y
-
-RUN mkdir -p /usr/src/app/node_modules
-RUN mkdir -p /usr/src/app/tmp
-
-
-
+# Diretório de trabalho
 WORKDIR /usr/src/app
-COPY package.json .
 
+# Copiar os arquivos necessários para a construção do projeto
+COPY package*.json ./
+
+# Instalação das dependências
 RUN npm install
 
+# Copiar o resto dos arquivos do projeto
 COPY . .
 
+# Comando para iniciar o servidor
 CMD [ "npm", "start" ]

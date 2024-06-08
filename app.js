@@ -1,68 +1,56 @@
-const express = require('express');
-const bodyParser = require('body-parser');
+// app.js
 
+const express = require('express');
+const mysql = require('mysql');
 const os = require('os');
 
 const app = express();
 
-app.get('/', (request, response) => {
-    return response
-    .status(200)
-    .json({
-        status: true,
-        mensagem: 'OK'
-    });
-})
+// Configuração da conexão com o banco de dados MySQL
+const db = mysql.createConnection({
+  host: 'mysql',
+  user: 'root',
+  password: '123456',
+  database: 'minha_database'
+});
 
-app.get('/redirect', (request, response) => {
-    return response.redirect(307, '/redirect2');
-})
+// Conectar ao banco de dados
+db.connect((err) => {
+  if (err) {
+    throw err;
+  }
+  console.log('Conectado ao banco de dados MySQL...');
+});
 
-app.get('/redirect2', (request, response) => {
-    return response
-    .status(200)
-    .json({
-        status: true,
-        mensagem: 'OK'
-    });
-})
+// Endpoint para consulta de dados
+app.get('/consulta-dados', (req, res) => {
+  let sql = 'SELECT * FROM minha_tabela';
+  db.query(sql, (err, result) => {
+    if (err) throw err;
+    console.log(result);
+    res.json(result);
+  });
+});
 
-app.get('/liveness', (request, response) => {
-    return response
-    .status(200)
-    .json({
-        status: true,
-        path: "",
-        gid: "",
-        uid: ""
-    });
-})
+// Endpoint para verificar a disponibilidade do serviço (liveness probe)
+app.get('/liveness', (req, res) => {
+  res.status(200).json({
+    status: true
+  });
+});
 
-app.get('/rediness', (request, response) => {
-    return response
-    .status(200)
-    .json({
-        status: true,
-        mensagem: 'rediness',
-        os: os.platform(),
-        freemem: os.freemem(),
-        homedir: os.homedir()
+// Endpoint para verificar a prontidão do serviço (readiness probe)
+app.get('/rediness', (req, res) => {
+  res.status(200).json({
+    status: true,
+    os: os.platform(),
+    freemem: os.freemem(),
+    homedir: os.homedir()
+  });
+});
 
-    });
-})
-
-app.get('/diario', (request, response) => {
-    return response
-    .status(200)
-    .json({
-        message: "Meu aplicativo está funcionando, UFA!!!",
-        platform: os.platform(),
-        os: os.platform(),
-        freemem: os.freemem(),
-        homedir: os.homedir(),
-        date: new Date().getTime()
-
-    });
-})
-
-module.exports = app;
+// Inicializar o servidor
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  console.log(`Servidor Node.js executando na porta ${port}`);
+});
